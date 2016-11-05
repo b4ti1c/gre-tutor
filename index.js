@@ -55,8 +55,8 @@ if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
 if (argv.restore || argv.r) return restoreSave(path.resolve(argv.restore || argv.r));
 if (argv.train || argv.t) return train().then(() => {
-    console.log('Congratulations, you successfully trained on ' + _.filter(checklist).length.toString().red + ' different words');
-    pronounce('Congratulations');
+    console.log('Congratulations, you have trained on ' + _.filter(checklist).length.toString().red + ' different words');
+    pronounce('Congratulations, you have trained on ' + _.filter(checklist).length.toString() + ' different words');
 });
 if (argv.search || argv.s) return search();
 return console.log(`There are ${_.keys(checklist).length} words in dictionary. They are:\n`, words);
@@ -114,19 +114,15 @@ function coverage({inclusive = 0} = {}) {
     return 100 * (_.filter(checklist).length + inclusive) / _.keys(checklist).length;
 }
 
-
 function askAWord() {
     let speechFinished;
 
     return new Promise((resolve, reject) => {
-        const week = getRandomWeek();
-        const word = getRandomWord(week);
-        const meaning = week[word];
+        const {word, meaning} = getRandomWord();
+        speechFinished = pronounce(word);
 
         const covered = coverage({inclusive: 1});
         const wordQuestion = `${word.blue} %${covered.toFixed(0)}`;
-
-        speechFinished = pronounce(word);
 
         prompt.get(wordQuestion, (err, response) => {
             if (err) return reject(err);
@@ -145,23 +141,21 @@ function askAWord() {
 }
 
 
-function getRandomWord(week = prepWeek) {
-    const randomWord = _.sample(Object.keys(week));
+function getRandomWord() {
+    const word = _.chain(wordList)
+        .keys()
+        .filter(word => !checklist[word])
+        .sample()
+        .value();
 
-    if (!checklist[randomWord]) return randomWord;
-    return getRandomWord(week);
-}
+    const meaning = wordList[word];
 
-
-function getRandomWeek() {
-    const randomWeek = Math.floor(Math.random() * prepWeek) + 1;
+    const weekOfTheWord = parseInt(_.findKey(words, week => _.keys(week).includes(word)).slice(4), 10);
     const gaussian = gaussianGenerator(1, 1, (prepWeek - 1) || 0.01);
-    const p_randomWeek = gaussian(randomWeek);
+    const p_selectingWeek = gaussian(weekOfTheWord);
 
-    const allChecked = _.every(Object.keys(words[`week${randomWeek}`]), word => checklist[word]);
-
-    if (!allChecked && Math.random() < p_randomWeek) return words[`week${randomWeek}`];
-    return getRandomWeek();
+    if (Math.random() < p_selectingWeek) return {word, meaning};
+    return getRandomWord();
 }
 
 
@@ -229,13 +223,15 @@ function gracefulExit(e) {
 function restoreSave(path) {
     if (!_.isString(path)) return console.log('You must type a valid backup file path');
 
-    words = require(path);
+    const restoredWords = require(path);
+    fs.writeFileSync(persistenceFile, JSON.stringify(restoredWords, null, 4));
+
     console.log('Dictionary is replaced with the file at '.green + path.black);
-    gracefulExit();
+    process.exit();
 }
 
 
-function pronounce(word, voice = 'Samantha') {
+function pronounce(word, voice = argv.v || argv.voice || 'Samantha') {
     if (mute) return Promise.resolve();
     if (process.platform !== 'darwin') return Promise.resolve();
 
@@ -254,15 +250,25 @@ function pronounce(word, voice = 'Samantha') {
 
 function showHelp() {
     console.log(`
+/*****************************************************
 GRE - Vocabulary Tutor
 Version: ${require('./package.json').version.grey}
+*****************************************************/
+
+How to Train?
+
+- Start the tutor with '-t' option
+- Tutor will ask a word
+- If you know the meaning of the word, just press 'Enter' (or type the meaning of the word as it is in dictionary)
+- Repeat until desired coverage (%) is reached
+
 
 Options:
 
 * If you start without any options, it will list your whole dictionary
 * ${'--add | -a'.blue} : Add words to dictionary manually
-* ${'--train | t'.blue} : Train on the dictionary
-* ${'--coverage | c <number>'.blue} : Set a desired coverage amount for training. Default is 90 (%90)
+* ${'--train | -t'.blue} : Train on the dictionary
+* ${'--coverage | -c <number>'.blue} : Set a desired coverage amount for training. Default is 90 (%90)
 * ${'--week | -w <number>'.blue} : Start at a different week than the last. For example:
 node index.js --add -w 3 -> Will add words to 3rd week
 node index.js -s --week 5 -> Will modify the word frequency as if you just finished building the 5th deck
@@ -271,17 +277,10 @@ ${'If you don\'t specify any week, it will continue from the latest week you\'ve
 * ${'--backup | -b <filepath>'.blue} : Save a copy of the dictionary at the filepath
 * ${'--restore | -r <filepath>'.blue} : Replace default dictionary with the contents of a backup dictionary
 * ${'--mute | -m'.blue} : Do not pronounce the words on the fly
+* ${'--voice | -v'.blue} : Change voice of the pronounciation. For list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
 * ${'--help | -h'.blue} : Show help
 
 To start the tutor with a dictionary file other than the default, use 'open' option as:
 * ${'--open | -o <filepath>'.blue} : Start the tutor with a custom dictionary. This is optional
-
-
-How to Train?
-
-- Start the tutor with '-t' option
-- Tutor will ask a word
-- If you know the meaning of the word, just press 'Enter' (or type the meaning of the word as it is in dictionary)
-- Repeat until desired coverage (%) is reached
 `);
 }
