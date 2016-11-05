@@ -11,7 +11,7 @@ const homedir = require('homedir')();
 const argv = require('minimist')(process.argv.slice(2));
 const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
 const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
-const desiredCoverage = argv.coverage || argv.c || 90;
+const desiredCoverage = argv.coverage || argv.c || 100;
 const mute = argv.mute || argv.m;
 
 
@@ -308,7 +308,7 @@ ${'--week | -w <number>'.cyan} : Default is the last week. This parameter serves
     2. When training words, it adjusts the probability of a word coming up, depending on its week
 ${'--voice | -v <voiceName>'.cyan} : Default is Samantha. Change the voice of the pronounciation. For the list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
 ${'--mute | -m'.cyan} : Type this option if hearing the pronunciation annoys you.
-${'--coverage | -c <number>'.cyan} : Default is 90. Set a desired coverage amount for training. For example, if you set it 50, your training will be completed after covering 50% of the words in the dictionary.
+${'--coverage | -c <number>'.cyan} : Default is 100. Set a desired coverage amount for training. For example, if you set it 50, your training will be completed after covering 50% of the words in the dictionary.
 
 
 Examples:
