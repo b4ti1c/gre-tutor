@@ -127,14 +127,39 @@ function askAWord() {
         prompt.get(wordQuestion, (err, response) => {
             if (err) return reject(err);
 
-            if (response[wordQuestion] == meaning || response[wordQuestion] == '') {
+            if (response[wordQuestion] == meaning ||
+                response[wordQuestion] == '' ||
+                response[wordQuestion].toLowerCase() == 'y' ||
+                response[wordQuestion].toLowerCase() == 'yes') {
                 checklist[word] = true;
                 console.log('Correct. It\'s: '.black + meaning.red);
+                resolve();
             }
-            else
-                console.log('NOPE! '.black + 'It means '.grey + meaning.red);
+            else if (response[wordQuestion] == '?') {
+                console.log('It means '.black + meaning.red);
 
-            resolve();
+                const question = 'Did you know it?'.magenta;
+
+                prompt.get(question, (err, response) => {
+                    if (err) return reject(err);
+
+                    if (response[question] == '' ||
+                        response[question].toLowerCase() == 'y' ||
+                        response[question].toLowerCase() == 'yes') {
+                        checklist[word] = true;
+                        console.log('Perfect!'.grey);
+                        resolve();
+                    }
+                    else {
+                        console.log('OK, we\'ll come back to this one later...'.grey);
+                        resolve();
+                    };
+
+                });
+            } else {
+                console.log('NOPE! '.black + 'It means '.grey + meaning.red);
+                resolve();
+            };
         });
     })
     .then(_ => speechFinished);
@@ -260,6 +285,8 @@ How to Train?
 - Start the tutor with '-t' option
 - Tutor will ask a word
 - If you know the meaning of the word, just press 'Enter' (or type the meaning of the word as it is in dictionary)
+- If you do not know the meaning, type anything and press 'Enter'.
+- If you'd like to see the meaning before deciding, you can peek at the answer. Type '?' and press Enter
 - Repeat until desired coverage (%) is reached
 
 
