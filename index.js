@@ -11,6 +11,7 @@ const homedir = require('homedir')();
 const argv = require('minimist')(process.argv.slice(2));
 const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
 const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
+const mute = argv.mute || argv.m;
 
 
 try { fs.accessSync(persistenceFile, fs.F_OK); }
@@ -64,19 +65,29 @@ function addWords() {
 
 
 function insertWord() {
+    let speechFinished;
+
     return new Promise((resolve, reject) => {
         if (!words[`week${prepWeek}`]) words[`week${prepWeek}`] = {};
 
         const wordCount = Object.keys(words[`week${prepWeek}`]).length;
         const wordVar = `word #${wordCount + 1} of week${prepWeek}`;
 
-        prompt.get([wordVar, 'meaning'], (err, response) => {
+        prompt.get(wordVar, (err, response) => {
             if (err) return reject(err);
+            const word = response[wordVar];
 
-            words[`week${prepWeek}`][response[wordVar]] = response.meaning;
-            resolve();
+            speechFinished = pronounce(word);
+
+            prompt.get('meaning', (err, response) => {
+                if (err) return reject(err);
+
+                words[`week${prepWeek}`][word] = response.meaning;
+                resolve();
+            });
         });
-    });
+    })
+    .then(_ => speechFinished);
 }
 
 
@@ -100,6 +111,8 @@ function askAWord() {
         const covered = 100 * _.filter(checklist).length / _.keys(checklist).length;
         const wordQuestion = `${word.blue} %${covered.toFixed(0)}`;
 
+        speechFinished = pronounce(word);
+
         prompt.get(wordQuestion, (err, response) => {
             if (err) return reject(err);
 
@@ -112,7 +125,8 @@ function askAWord() {
 
             resolve();
         });
-    });
+    })
+    .then(_ => speechFinished);
 }
 
 
@@ -158,9 +172,10 @@ function searchAWord() {
         search('Word:', Object.keys(wordList), (err, word) => {
             if (err) return reject(err);
             console.log(word.blue + ' => '.black + wordList[word].red);
-            resolve();
+            resolve(word);
         });
     })
+    .then(pronounce)
     .then(_ => {
         return new Promise((resolve, reject) => {
             const listener = _ => {
@@ -205,6 +220,19 @@ function restoreSave(path) {
 }
 
 
+function pronounce(word, voice = 'Samantha') {
+    if (mute) return Promise.resolve();
+    if (process.platform !== 'darwin') return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+        require('child_process').exec(`say ${word} -v ${voice}`, err => {
+            if (err) return reject(err);
+            resolve();
+        });
+    });
+}
+
+
 /**
  * HELP
  */
@@ -226,6 +254,7 @@ ${'If you don\'t specify any week, it will continue from the latest week you\'ve
 * ${'--meaning | -m'.blue} : Search dictionary for the meaning of a word
 * ${'--backup | -b <filepath>'.blue} : Save a copy of the dictionary at the filepath
 * ${'--restore | -r <filepath>'.blue} : Replace default dictionary with the contents of a backup dictionary.
+* ${'--mute | -m'.blue} : Do not pronounce the words on the fly
 * ${'--help | -h'.blue} : Show help
 
 To start the tutor with a dictionary file other than the default, use 'open' option as:
