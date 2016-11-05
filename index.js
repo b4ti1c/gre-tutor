@@ -6,7 +6,7 @@ const path = require('path');
 const _ = require('lodash');
 const colors = require('colors');
 const prompt = require('prompt');
-const search = require('prompt-autocomplete');
+const promptAuto = require('prompt-autocomplete');
 const homedir = require('homedir')();
 const argv = require('minimist')(process.argv.slice(2));
 const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
@@ -46,12 +46,19 @@ const checklist = _.chain(words)
     .value();
 
 
+console.log('Welcome to GRE - Tutor'.black);
+console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().red);
+
+
 if (argv.help || argv.h) return showHelp();
 if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
 if (argv.restore || argv.r) return restoreSave(path.resolve(argv.restore || argv.r));
-if (argv.study || argv.s) return study().then(_ => console.log('Congratulations, you studied all the ' + _.keys(checklist.length) + ' words'));
-if (argv.meaning || argv.m) return translate();
+if (argv.train || argv.t) return train().then(() => {
+    console.log('Congratulations, you successfully trained on ' + _.filter(checklist).length.toString().red + ' different words');
+    pronounce('Congratulations');
+});
+if (argv.search || argv.s) return search();
 return console.log(`There are ${_.keys(checklist).length} words in dictionary. They are:\n`, words);
 
 
@@ -61,7 +68,7 @@ return console.log(`There are ${_.keys(checklist).length} words in dictionary. T
 
 function addWords() {
     const insertWordLoop = _ => insertWord().then(_ => insertWordLoop());
-    insertWordLoop().catch(gracefulExit);
+    return insertWordLoop().catch(gracefulExit);
 }
 
 
@@ -166,18 +173,18 @@ function gaussianGenerator(peakValue, peakPosition, peakWidth) {
 }
 
 /**
- * TRANSLATE LOGIC
+ * SEARCH LOGIC
  */
 
-function translate() {
-    const translateLoop = _ => searchAWord().then(_ => translateLoop());
-    translateLoop().catch(gracefulExit);
+function search() {
+    const searchLoop = _ => searchAWord().then(_ => searchLoop());
+    return searchLoop().catch(gracefulExit);
 }
 
 
 function searchAWord() {
     return new Promise((resolve, reject) => {
-        search('Word:', Object.keys(wordList), (err, word) => {
+        promptAuto('Word:', Object.keys(wordList), (err, word) => {
             if (err) return reject(err);
             console.log(word.blue + ' => '.black + wordList[word].red);
             resolve(word);
@@ -205,7 +212,7 @@ function searchAWord() {
 function save(path = persistenceFile) {
     fs.writeFileSync(path, JSON.stringify(words, null, 4));
     console.log('All changes are saved to '.green + path.black);
-};
+}
 
 
 function gracefulExit(e) {
@@ -254,19 +261,20 @@ Options:
 
 * If you start without any options, it will list your whole dictionary
 * ${'--add | -a'.blue} : Add words to dictionary manually
-* ${'--study | s'.blue} : Study the dictionary
-* ${'--week | -w <number>'.blue} : Start studying/adding words to the weeks deck. For example:
+* ${'--train | t'.blue} : Train on the dictionary
+* ${'--coverage | c <number>'.blue} : Set a desired coverage amount for training. Default is 90 (%90)
+* ${'--week | -w <number>'.blue} : Start at a different week than the last. For example:
 node index.js --add -w 3 -> Will add words to 3rd week
 node index.js -s --week 5 -> Will modify the word frequency as if you just finished building the 5th deck
 ${'If you don\'t specify any week, it will continue from the latest week you\'ve been so far'.cyan}
-* ${'--meaning | -m'.blue} : Search dictionary for the meaning of a word
+* ${'--search | -s'.blue} : Search dictionary for the meaning of a word
 * ${'--backup | -b <filepath>'.blue} : Save a copy of the dictionary at the filepath
-* ${'--restore | -r <filepath>'.blue} : Replace default dictionary with the contents of a backup dictionary.
+* ${'--restore | -r <filepath>'.blue} : Replace default dictionary with the contents of a backup dictionary
 * ${'--mute | -m'.blue} : Do not pronounce the words on the fly
 * ${'--help | -h'.blue} : Show help
 
 To start the tutor with a dictionary file other than the default, use 'open' option as:
-* ${'--open | -o <filepath>'.blue} : Start the tutor with a custom dictionary. This is optional.
+* ${'--open | -o <filepath>'.blue} : Start the tutor with a custom dictionary. This is optional
 
 
 How to Train?
