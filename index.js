@@ -124,20 +124,27 @@ function askAWord() {
         const covered = coverage({inclusive: 1});
         const wordQuestion = `${word.blue} %${covered.toFixed(0)}`;
 
+
+        const correctAnswer = function() {
+            checklist[word] = true;
+            console.log('Perfect!'.green);
+            resolve();
+        };
+
+        const wrongAnswer = function() {
+            console.log('OK, we\'ll come back to this one later...'.grey);
+            resolve();
+        };
+
         prompt.get(wordQuestion, (err, response) => {
             if (err) return reject(err);
+            console.log(`${word.cyan} means `.black + meaning.red);
 
-            if (response[wordQuestion] == meaning ||
-                response[wordQuestion] == '' ||
-                response[wordQuestion].toLowerCase() == 'y' ||
-                response[wordQuestion].toLowerCase() == 'yes') {
-                checklist[word] = true;
-                console.log('Correct. It\'s: '.black + meaning.red);
-                resolve();
-            }
-            else if (response[wordQuestion] == '?') {
-                console.log('It means '.black + meaning.red);
+            if (response[wordQuestion].toLowerCase() == 'y' ||
+                response[wordQuestion].toLowerCase() == 'yes')
+                return correctAnswer();
 
+            if (response[wordQuestion] == '') {
                 const question = 'Did you know it?'.magenta;
 
                 prompt.get(question, (err, response) => {
@@ -145,21 +152,12 @@ function askAWord() {
 
                     if (response[question] == '' ||
                         response[question].toLowerCase() == 'y' ||
-                        response[question].toLowerCase() == 'yes') {
-                        checklist[word] = true;
-                        console.log('Perfect!'.grey);
-                        resolve();
-                    }
-                    else {
-                        console.log('OK, we\'ll come back to this one later...'.grey);
-                        resolve();
-                    };
+                        response[question].toLowerCase() == 'yes')
+                        return correctAnswer();
+                    else return wrongAnswer();
 
                 });
-            } else {
-                console.log('NOPE! '.black + 'It means '.grey + meaning.red);
-                resolve();
-            };
+            } else return wrongAnswer();
         });
     })
     .then(_ => speechFinished);
@@ -284,9 +282,10 @@ How to Train?
 
 - Start the tutor with '-t' option
 - Tutor will ask a word
-- If you know the meaning of the word, just press 'Enter' (or type the meaning of the word as it is in dictionary)
-- If you do not know the meaning, type anything and press 'Enter'.
-- If you'd like to see the meaning before deciding, you can peek at the answer. Type '?' and press Enter
+- If you know the meaning of the word, type 'y' or 'yes' and press 'Enter' to get the next challenge
+- If you are not 100% sure, just press 'Enter'
+- The tutor will reveal the meaning. If it is the same as you think it was, press 'Enter' again
+- If you type anything other at the first or second step, the meaning will be shown but the word will be asked later again
 - Repeat until desired coverage (%) is reached
 
 
