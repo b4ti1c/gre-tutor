@@ -263,24 +263,36 @@ How to Train?
 - Repeat until desired coverage (%) is reached
 
 
-Options:
+Usage:
 
-* If you start without any options, it will list your whole dictionary
-* ${'--add | -a'.blue} : Add words to dictionary manually
-* ${'--train | -t'.blue} : Train on the dictionary
-* ${'--coverage | -c <number>'.blue} : Set a desired coverage amount for training. Default is 90 (%90)
-* ${'--week | -w <number>'.blue} : Start at a different week than the last. For example:
-node index.js --add -w 3 -> Will add words to 3rd week
-node index.js -s --week 5 -> Will modify the word frequency as if you just finished building the 5th deck
-${'If you don\'t specify any week, it will continue from the latest week you\'ve been so far'.cyan}
-* ${'--search | -s'.blue} : Search dictionary for the meaning of a word
-* ${'--backup | -b <filepath>'.blue} : Save a copy of the dictionary at the filepath
-* ${'--restore | -r <filepath>'.blue} : Replace default dictionary with the contents of a backup dictionary
-* ${'--mute | -m'.blue} : Do not pronounce the words on the fly
-* ${'--voice | -v'.blue} : Change voice of the pronounciation. For list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
-* ${'--help | -h'.blue} : Show help
+* ${'gre-tutor [--open | -o <filepath>]'.blue} : Lists all the words in the opened dictionary
+* ${'gre-tutor (--help | -h)'.blue} : Show this help page
+* ${'gre-tutor (--add | -a) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Insert words to the dictionary
+* ${'gre-tutor (--train | -t) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--coverage | -c <percentage>] [--open | -o <filepath>]'.blue} : Train on the words in the dictionary
+* ${'gre-tutor (--search | -s) [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Search words in the dictionary
+* ${'gre-tutor (--backup | -b) <filepath> [--open | -o <filepath>]'.blue} : Create a copy of the currently open dictionary at the desired filepath
+* ${'gre-tutor (--restore | -r) <filepath>'.blue} : Overwrite the default dictionary with the dictionary at the filepath
 
-To start the tutor with a dictionary file other than the default, use 'open' option as:
-* ${'--open | -o <filepath>'.blue} : Start the tutor with a custom dictionary. This is optional
+
+Notes:
+
+${'--open | -o <filepath>'.cyan} : Default is '~/.words.json'. This parameter changes the load/save path of the dictionary only for this run.
+${'--week | -w <number>'.cyan} : Default is the last week. This parameter serves 2 purposes
+    1. When inserting words, it inserts into the appropriate week
+    2. When training words, it adjusts the probability of a word coming up, depending on its week
+${'--voice | -v <voiceName>'.cyan} : Default is Samantha. Change the voice of the pronounciation. For the list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
+${'--mute | -m'.cyan} : Type this option if hearing the pronunciation annoys you.
+${'--coverage | -c <number>'.cyan} : Default is 90. Set a desired coverage amount for training. For example, if you set it 50, your training will be completed after covering 50% of the words in the dictionary.
+
+
+Examples:
+
+${'$ gre-tutor'.magenta} -> List all words in default dictionary
+${'$ gre-tutor --open myDict.json --add'.magenta} -> Add words to the last week of dictionary at myDict.json
+${'$ gre-tutor -a -w 3'.magenta} -> Add words to the 3rd week of the default dictionary
+${'$ gre-tutor -t -v Alex -c 75'.magenta} -> Train on the default dictionary with 75% coverage. Use Alex voice as pronunciation
+${'$ gre-tutor --search -m -o myDict.json'.magenta} -> Browse words in myDict.json dictionary and mute the voice while browsing
+${'$ gre-tutor --backup backup.json --open myDict.json'.magenta} -> Create a backup of myDict.json at backup.json
+${'$ gre-tutor --restore backup.json'.magenta} -> Overwrite the default dictionary with the contents of backup.json
 `);
 }

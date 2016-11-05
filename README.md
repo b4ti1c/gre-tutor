@@ -9,17 +9,13 @@ It starts with an empty dictionary. The you can:
 - Search through your dictionary
 - **Study** your dictionary. The oldest words come the most!
 
-Make sure your create backups time-to-time. Things are not 100% stable, backup is important!
+Make sure your create backups from time to time. Things are not 100% stable, backup is important!
 
+Make sure to **read the help page** of the tutor!
 
 ## Installation and Usage
 
 ```
-    git clone
-    npm install
-    node index.js <options>
-```
-
-```
-    node index.js --help
+    npm install batilc1/gre-tutor -g
+    gre-tutor --help
 ```
