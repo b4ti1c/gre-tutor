@@ -37,7 +37,7 @@ const defaultWeek = _.chain(words)
     .value();
 
 const prepWeek = parseInt(argv.w || argv.week || defaultWeek || 1, 10);
-const wordList = _.merge(... _.valuesIn(words));
+const wordList = _.merge(... _.cloneDeep(_.valuesIn(words)));
 const checklist = _.chain(words)
     .pickBy((_, weekName) => parseInt(weekName.slice(4), 10) <= prepWeek)
     .flatMap(week => Object.keys(week))
