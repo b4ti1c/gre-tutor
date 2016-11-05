@@ -11,6 +11,7 @@ const homedir = require('homedir')();
 const argv = require('minimist')(process.argv.slice(2));
 const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
 const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
+const desiredCoverage = argv.coverage || argv.c || 90;
 const mute = argv.mute || argv.m;
 
 
@@ -92,23 +93,30 @@ function insertWord() {
 
 
 /**
- * STUDY LOGIC
+ * TRAINING LOGIC
  */
 
 
-function study() {
-    const askLoop = () => askAWord().then(() => _.every(checklist) ? Promise.resolve : askLoop());
-    askLoop().catch(gracefulExit);
+function train() {
+    const askLoop = _ => askAWord().then(_ => coverage() >= desiredCoverage ? Promise.resolve : askLoop());
+    return askLoop().catch(gracefulExit);
+}
+
+
+function coverage({inclusive = 0} = {}) {
+    return 100 * (_.filter(checklist).length + inclusive) / _.keys(checklist).length;
 }
 
 
 function askAWord() {
+    let speechFinished;
+
     return new Promise((resolve, reject) => {
         const week = getRandomWeek();
         const word = getRandomWord(week);
         const meaning = week[word];
 
-        const covered = 100 * _.filter(checklist).length / _.keys(checklist).length;
+        const covered = coverage({inclusive: 1});
         const wordQuestion = `${word.blue} %${covered.toFixed(0)}`;
 
         speechFinished = pronounce(word);
