@@ -259,5 +259,13 @@ ${'If you don\'t specify any week, it will continue from the latest week you\'ve
 
 To start the tutor with a dictionary file other than the default, use 'open' option as:
 * ${'--open | -o <filepath>'.blue} : Start the tutor with a custom dictionary. This is optional.
+
+
+How to Train?
+
+- Start the tutor with '-t' option
+- Tutor will ask a word
+- If you know the meaning of the word, just press 'Enter' (or type the meaning of the word as it is in dictionary)
+- Repeat until desired coverage (%) is reached
 `);
 }
