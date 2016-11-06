@@ -14,6 +14,7 @@ const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
 const desiredCoverage = argv.coverage || argv.c || 100;
 const mute = argv.mute || argv.m;
 
+if (desiredCoverage > 100) desiredCoverage = 100;
 
 try { fs.accessSync(persistenceFile, fs.F_OK); }
 catch (err) {
