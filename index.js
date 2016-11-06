@@ -104,11 +104,15 @@ function test() {
 
     console.log(Math.ceil(_.keys(wordList).length * desiredCoverage / 100).toString().red +
                 ' of '.grey +
-                _.keys(wordList).length.toString().blue + ' questions are asked on each training. Out of those:'.grey);
+                _.keys(wordList).length.toString().blue + ' words are asked on each training. Out of those:'.grey);
 
 
     const total = _.reduce(experimentResults, _.add);
-    const percentages = _.mapValues(experimentResults, val => `${Math.round(val / experimentCount)} words -> %${(100 * val / total).toFixed(1)}`);
+    const percentages = _.mapValues(experimentResults, (val, week) => '' +
+        Math.round(val / experimentCount) + ' of ' + _.size(words[week]) + ' ' +
+        'words are asked (%' + (100 * val / experimentCount / _.size(words[week])).toFixed(1) + ') ' +
+        '---> %' + (100 * val / total).toFixed(1)
+    );
 
     console.log(percentages);
 }
@@ -350,7 +354,7 @@ Usage:
 * ${'gre-tutor (--search | -s) [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Search words in the dictionary
 * ${'gre-tutor (--backup | -b) <filepath> [--open | -o <filepath>]'.blue} : Create a copy of the currently open dictionary at the desired filepath
 * ${'gre-tutor (--restore | -r) <filepath>'.blue} : Overwrite the default dictionary with the dictionary at the filepath
-* ${'gre-tutor --test [--week | -w <weeknumber>] [--coverage | -c <percentage>] [--open | -o <filepath>]'.blue} : Simulate 1000 trainings and see how many words from each week will be asked approximately.
+* ${'gre-tutor --test [--week | -w <weeknumber>] [--coverage | -c <percentage>] [--experiment | -e <number>] [--open | -o <filepath>]'.blue} : Simulate trainings and see how many words from each week will be asked approximately.
 
 
 Notes:
@@ -362,6 +366,7 @@ ${'--week | -w <number>'.cyan} : Default is the last week. This parameter serves
 ${'--voice | -v <voiceName>'.cyan} : Default is Samantha. Change the voice of the pronounciation. For the list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
 ${'--mute | -m'.cyan} : Type this option if hearing the pronunciation annoys you.
 ${'--coverage | -c <number>'.cyan} : Default is 100. Set a desired coverage amount for training. For example, if you set it 50, your training will be completed after covering 50% of the words in the dictionary.
+${'--experiment | -e <number>'.cyan} : Default is 1000. Set the desired number of simulations while testing
 
 
 Examples:
@@ -373,6 +378,6 @@ ${'$ gre-tutor -t -v Alex -c 75'.magenta} -> Train on the default dictionary wit
 ${'$ gre-tutor --search -m -o myDict.json'.magenta} -> Browse words in myDict.json dictionary and mute the voice while browsing
 ${'$ gre-tutor --backup backup.json --open myDict.json'.magenta} -> Create a backup of myDict.json at backup.json
 ${'$ gre-tutor --restore backup.json'.magenta} -> Overwrite the default dictionary with the contents of backup.json
-${'$ gre-tutor --test -c 70'.magenta} -> Do 1000 trainings and see the word distribution depending on your coverage. With %100 coverage, all questions gets asked.
+${'$ gre-tutor --test -c 70 -e 50'.magenta} -> Simulate 50 trainings and see the word distribution depending on your coverage. With %100 coverage, all questions gets asked.
 `);
 }
