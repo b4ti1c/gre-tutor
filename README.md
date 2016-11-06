@@ -16,6 +16,6 @@ Make sure to **read the help page** of the tutor!
 ## Installation and Usage
 
 ```
-    npm install batilc1/gre-tutor -g
+    npm install gre-tutor -g
     gre-tutor --help
 ```
