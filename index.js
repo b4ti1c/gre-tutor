@@ -13,6 +13,7 @@ const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
 const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
 const desiredCoverage = argv.coverage || argv.c || 100;
 const mute = argv.mute || argv.m;
+const experimentCount = argv.experiment || argv.e || 1000;
 
 if (desiredCoverage > 100) desiredCoverage = 100;
 
@@ -69,15 +70,15 @@ return console.log(`There are ${_.keys(checklist).length} words in dictionary. T
  */
 
 function test() {
-    const experimentCount = 1000;
+    console.log(`
+/***** SIMULATING ${experimentCount} TRAININGS *****/
+`.gray);
+
     const experimentResults = _.chain(words)
         .pickBy((_, weekName) => parseInt(weekName.slice(4), 10) <= prepWeek)
         .mapValues(_ => 0)
         .value();
 
-    console.log(`
-/***** SIMULATING ${experimentCount} TRAININGS *****/
-`.gray);
 
     for (let i = 0; i < experimentCount; i++) {
         const selected = {};
