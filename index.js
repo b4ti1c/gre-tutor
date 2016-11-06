@@ -56,9 +56,10 @@ if (argv.help || argv.h) return showHelp();
 if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
 if (argv.restore || argv.r) return restoreSave(path.resolve(argv.restore || argv.r));
-if (argv.train || argv.t) return train().then(() => {
-    console.log('Congratulations, you have trained on ' + _.filter(checklist).length.toString().red + ' different words');
+if (argv.train || argv.t) return train().catch(err => err).then(err => {
     pronounce('Congratulations, you have trained on ' + _.filter(checklist).length.toString() + ' different words');
+    analyzeTrainingAndPrint();
+    if (err) gracefulExit(err);
 });
 if (argv.test) return test();
 if (argv.search || argv.s) return search();
@@ -99,8 +100,7 @@ function test() {
 
     console.log(experimentCount.toString().green + ' demo trainings with %'.black +
                 desiredCoverage.toString().blue + ' coverage '.black +
-                'on week '.black + prepWeek.toString().red +
-                ' resulted with,'.black);
+                'on week '.black + prepWeek.toString().red + ' resulted with,'.black);
 
     console.log(Math.ceil(_.keys(wordList).length * desiredCoverage / 100).toString().red +
                 ' of '.grey +
@@ -162,7 +162,7 @@ function insertWord() {
 
 function train() {
     const askLoop = _ => askAWord().then(_ => coverage() >= desiredCoverage ? Promise.resolve : askLoop());
-    return askLoop().catch(gracefulExit);
+    return askLoop();
 }
 
 
@@ -243,6 +243,42 @@ function gaussianGenerator(peakValue, peakPosition, peakWidth) {
         const deviation = ((x - peakPosition) * (x - peakPosition)) / (2 * peakWidth * peakWidth);
         return peakValue * Math.exp(-1 * deviation);
     }
+}
+
+
+function analyzeTrainingAndPrint() {
+    const trained = _.chain(words)
+        .pickBy((_, weekName) => parseInt(weekName.slice(4), 10) <= prepWeek)
+        .mapValues(_ => 0)
+        .value();
+
+    const trainedWords = _.chain(checklist)
+        .pickBy(_.identity)
+        .keys()
+        .value();
+
+    _.forEach(words, (week, weekName) => _.keys(week).forEach(word => {
+        if (trainedWords.includes(word))
+            trained[weekName]++;
+    }));
+
+    console.log('');
+    console.log('The training analyis with %'.black +
+                desiredCoverage.toString().blue + ' coverage '.black +
+                'on week '.black + prepWeek.toString().red + ':'.black);
+
+    console.log('You have trained on ' + _.filter(checklist).length.toString().red + ' ' +
+                'of ' + _.size(checklist).toString().blue + ' words in dictionary');
+
+
+    const total = _.reduce(trained, _.add);
+    const percentages = _.mapValues(trained, (val, week) => '' +
+        val + ' of ' + _.size(words[week]) + ' ' +
+        'words are asked (%' + (100 * val / _.size(words[week])).toFixed(1) + ') ' +
+        '---> %' + (100 * val / total).toFixed(1)
+    );
+
+    console.log(percentages);
 }
 
 /**
