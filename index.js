@@ -14,6 +14,8 @@ const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
 const desiredCoverage = argv.coverage || argv.c || 100;
 const mute = argv.mute || argv.m;
 const experimentCount = argv.experiment || argv.e || 100;
+const focus = argv.focus || argv.f || 1;
+const depth = argv.depth || argv.d || ((desiredCoverage / 100 > 0.5) ? desiredCoverage / 100 : 0.7);
 
 if (desiredCoverage > 100) desiredCoverage = 100;
 
@@ -230,7 +232,7 @@ function getRandomWord({list = checklist} = {}) {
     const meaning = wordList[word];
 
     const weekOfTheWord = parseInt(_.findKey(words, week => _.keys(week).includes(word)).slice(4), 10);
-    const gaussian = gaussianGenerator(1, 1, (prepWeek - 1) || 0.01);
+    const gaussian = gaussianGenerator(1, focus, (prepWeek * depth - 1) || 0.01);
     const p_selectingWeek = gaussian(weekOfTheWord);
 
     if (Math.random() < p_selectingWeek) return {word, meaning};
@@ -415,5 +417,10 @@ ${'$ gre-tutor --search -m -o myDict.json'.magenta} -> Browse words in myDict.js
 ${'$ gre-tutor --backup backup.json --open myDict.json'.magenta} -> Create a backup of myDict.json at backup.json
 ${'$ gre-tutor --restore backup.json'.magenta} -> Overwrite the default dictionary with the contents of backup.json
 ${'$ gre-tutor --test -c 70 -e 50'.magenta} -> Simulate 50 trainings and see the word distribution depending on your coverage. With %100 coverage, all questions gets asked.
+
+
+More options on training (you can also play with test to see your working plan):
+${'--focus | -f <number>'.cyan} : Default is 1. Adjusts the focused week number.
+${'--depth | -d <number>'.cyan} : Default is dependent on coverage or 0.7. Set between [0, 1] where 1 means the most even distribution
 `);
 }
