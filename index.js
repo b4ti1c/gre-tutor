@@ -289,7 +289,7 @@ function save(path = persistenceFile) {
 
 
 function gracefulExit(e) {
-    console.log(e.black);
+    if (e.message !='canceled') console.log(e || e.stack || e.message);
     save();
     process.exit();
 }
