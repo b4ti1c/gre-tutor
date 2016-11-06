@@ -58,8 +58,58 @@ if (argv.train || argv.t) return train().then(() => {
     console.log('Congratulations, you have trained on ' + _.filter(checklist).length.toString().red + ' different words');
     pronounce('Congratulations, you have trained on ' + _.filter(checklist).length.toString() + ' different words');
 });
+if (argv.test) return test();
 if (argv.search || argv.s) return search();
 return console.log(`There are ${_.keys(checklist).length} words in dictionary. They are:\n`, words);
+
+
+/**
+ * TEST LOGIC
+ */
+
+function test() {
+    const experimentCount = 1000;
+    const experimentResults = _.chain(words)
+        .pickBy((_, weekName) => parseInt(weekName.slice(4), 10) <= prepWeek)
+        .mapValues(_ => 0)
+        .value();
+
+    console.log(`
+/***** SIMULATING ${experimentCount} TRAININGS *****/
+`.gray);
+
+    for (let i = 0; i < experimentCount; i++) {
+        const selected = {};
+        const experimentalCheckList = _.cloneDeep(checklist);
+
+        while(coverage({list: experimentalCheckList}) < desiredCoverage) {
+            const {word, meaning} = getRandomWord({list: experimentalCheckList});
+            const week = parseInt(_.findKey(words, week => _.keys(week).includes(word)).slice(4), 10);
+            if (!selected[`week${week}`]) selected[`week${week}`] = 0;
+
+            experimentalCheckList[word] = true;
+            selected[`week${week}`]++;
+        }
+
+        _.mergeWith(experimentResults, selected, _.add);
+    }
+
+
+    console.log(experimentCount.toString().green + ' demo trainings with %'.black +
+                desiredCoverage.toString().blue + ' coverage '.black +
+                'on week '.black + prepWeek.toString().red +
+                ' resulted with,'.black);
+
+    console.log(Math.ceil(_.keys(wordList).length * desiredCoverage / 100).toString().red +
+                ' of '.grey +
+                _.keys(wordList).length.toString().blue + ' questions are asked on each training. Out of those:'.grey);
+
+
+    const total = _.reduce(experimentResults, _.add);
+    const percentages = _.mapValues(experimentResults, val => `${Math.round(val / experimentCount)} words -> %${(100 * val / total).toFixed(1)}`);
+
+    console.log(percentages);
+}
 
 
 /**
@@ -110,8 +160,8 @@ function train() {
 }
 
 
-function coverage({inclusive = 0} = {}) {
-    return 100 * (_.filter(checklist).length + inclusive) / _.keys(checklist).length;
+function coverage({inclusive = 0, list = checklist} = {}) {
+    return 100 * (_.filter(list).length + inclusive) / _.keys(list).length;
 }
 
 function askAWord() {
@@ -164,10 +214,10 @@ function askAWord() {
 }
 
 
-function getRandomWord() {
+function getRandomWord({list = checklist} = {}) {
     const word = _.chain(wordList)
         .keys()
-        .filter(word => !checklist[word])
+        .filter(word => !list[word])
         .sample()
         .value();
 
@@ -178,7 +228,7 @@ function getRandomWord() {
     const p_selectingWeek = gaussian(weekOfTheWord);
 
     if (Math.random() < p_selectingWeek) return {word, meaning};
-    return getRandomWord();
+    return getRandomWord({list});
 }
 
 
@@ -298,6 +348,7 @@ Usage:
 * ${'gre-tutor (--search | -s) [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Search words in the dictionary
 * ${'gre-tutor (--backup | -b) <filepath> [--open | -o <filepath>]'.blue} : Create a copy of the currently open dictionary at the desired filepath
 * ${'gre-tutor (--restore | -r) <filepath>'.blue} : Overwrite the default dictionary with the dictionary at the filepath
+* ${'gre-tutor --test [--week | -w <weeknumber>] [--coverage | -c <percentage>] [--open | -o <filepath>]'.blue} : Simulate 1000 trainings and see how many words from each week will be asked approximately.
 
 
 Notes:
@@ -320,5 +371,6 @@ ${'$ gre-tutor -t -v Alex -c 75'.magenta} -> Train on the default dictionary wit
 ${'$ gre-tutor --search -m -o myDict.json'.magenta} -> Browse words in myDict.json dictionary and mute the voice while browsing
 ${'$ gre-tutor --backup backup.json --open myDict.json'.magenta} -> Create a backup of myDict.json at backup.json
 ${'$ gre-tutor --restore backup.json'.magenta} -> Overwrite the default dictionary with the contents of backup.json
+${'$ gre-tutor --test -c 70'.magenta} -> Do 1000 trainings and see the word distribution depending on your coverage. With %100 coverage, all questions gets asked.
 `);
 }
