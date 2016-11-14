@@ -50,10 +50,11 @@ const checklist = _.chain(words)
 
 const focus = argv.focus || argv.f || prepWeek;
 
-console.log('Welcome to GRE - Tutor'.black);
+console.log('Welcome to GRE - Tutor '.black + ' v' + require('./package.json').version);
 console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().red);
 
 
+if (argv.version) return;
 if (argv.help || argv.h) return showHelp();
 if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
