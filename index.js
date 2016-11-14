@@ -55,6 +55,7 @@ console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().
 
 
 if (argv.version) return;
+if (argv.load) return restoreSave('./words.json');
 if (argv.help || argv.h) return showHelp();
 if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
@@ -394,6 +395,7 @@ Usage:
 
 * ${'gre-tutor [--open | -o <filepath>]'.blue} : Lists all the words in the opened dictionary
 * ${'gre-tutor (--help | -h)'.blue} : Show this help page
+* ${'gre-tutor --load'.blue} : Load the initial dictionary available with this program
 * ${'gre-tutor (--add | -a) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Insert words to the dictionary
 * ${'gre-tutor (--train | -t) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--coverage | -c <percentage>] [--open | -o <filepath>]'.blue} : Train on the words in the dictionary
 * ${'gre-tutor (--search | -s) [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Search words in the dictionary
@@ -417,6 +419,7 @@ ${'--experiment | -e <number>'.cyan} : Default is 100. Set the desired number of
 Examples:
 
 ${'$ gre-tutor'.magenta} -> List all words in default dictionary
+${'$ gre-tutor --load'.magenta} -> Load words packaged with this program as your dictionary
 ${'$ gre-tutor --open myDict.json --add'.magenta} -> Add words to the last week of dictionary at myDict.json
 ${'$ gre-tutor -a -w 3'.magenta} -> Add words to the 3rd week of the default dictionary
 ${'$ gre-tutor -t -v Alex -c 75'.magenta} -> Train on the default dictionary with 75% coverage. Use Alex voice as pronunciation
