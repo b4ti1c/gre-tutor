@@ -295,11 +295,17 @@ function search() {
 
 
 function searchAWord() {
+    const searchList = _.assign({}, wordList, _.invert(wordList));
+
     return new Promise((resolve, reject) => {
-        promptAuto('Word:', Object.keys(wordList), (err, word) => {
+        promptAuto('Word:', Object.keys(searchList), (err, word) => {
             if (err) return reject(err);
-            console.log(word.blue + ' => '.black + wordList[word].red);
-            resolve(word);
+            console.log(word.blue + ' => '.black + searchList[word].red);
+
+            const searchIsEnglish = _.has(wordList, word);
+
+            if (searchIsEnglish) resolve(word);
+            else resolve(searchList[word]);
         });
     })
     .then(pronounce)
