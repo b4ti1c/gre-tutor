@@ -14,7 +14,6 @@ const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
 const desiredCoverage = argv.coverage || argv.c || 100;
 const mute = argv.mute || argv.m;
 const experimentCount = argv.experiment || argv.e || 100;
-const focus = argv.focus || argv.f || 1;
 const depth = argv.depth || argv.d || ((desiredCoverage / 100 > 0.5) ? desiredCoverage / 100 : 0.7);
 
 if (desiredCoverage > 100) desiredCoverage = 100;
@@ -49,6 +48,7 @@ const checklist = _.chain(words)
     .mapValues(_ => false)
     .value();
 
+const focus = argv.focus || argv.f || prepWeek;
 
 console.log('Welcome to GRE - Tutor'.black);
 console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().red);
