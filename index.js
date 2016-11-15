@@ -11,12 +11,10 @@ const homedir = require('homedir')();
 const argv = require('minimist')(process.argv.slice(2));
 const dictionaryPath = argv.open || argv.o || path.join(homedir, '.words.json');
 const persistenceFile = path.resolve(process.cwd(), dictionaryPath);
-const desiredCoverage = argv.coverage || argv.c || 100;
+const coverageParam = argv.coverage || argv.c || -1;
 const mute = argv.mute || argv.m;
 const experimentCount = argv.experiment || argv.e || 100;
-const depth = argv.depth || argv.d || ((desiredCoverage / 100 > 0.5) ? desiredCoverage / 100 : 0.7);
 
-if (desiredCoverage > 100) desiredCoverage = 100;
 
 try { fs.accessSync(persistenceFile, fs.F_OK); }
 catch (err) {
@@ -49,6 +47,11 @@ const checklist = _.chain(words)
     .value();
 
 const focus = argv.focus || argv.f || prepWeek;
+const desiredCoverage = coverageParam <= 0 ? 100 :
+                        coverageParam < 1 ? 100 * coverageParam :
+                        100 * coverageParam / _.size(checklist);
+
+const depth = argv.depth || argv.d || ((desiredCoverage / 100 > 0.5) ? desiredCoverage / 100 : 0.7);
 
 console.log('Welcome to GRE - Tutor '.black + ' v' + require('./package.json').version);
 console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().red);
@@ -412,7 +415,7 @@ ${'--week | -w <number>'.cyan} : Default is the last week. This parameter serves
     2. When training words, it adjusts the probability of a word coming up, depending on its week
 ${'--voice | -v <voiceName>'.cyan} : Default is Samantha. Change the voice of the pronounciation. For the list of available voices, you may type 'say -v ?' in your terminal or may refer to apple docs.
 ${'--mute | -m'.cyan} : Type this option if hearing the pronunciation annoys you.
-${'--coverage | -c <number>'.cyan} : Default is 100. Set a desired coverage amount for training. For example, if you set it 50, your training will be completed after covering 50% of the words in the dictionary.
+${'--coverage | -c <number>'.cyan} : Default is %100, meaning all words will be asked. You may set a desired coverage amount for training, either by percentage with a value [0, 1], or by the exact number of words to be asked [1, ∞).
 ${'--experiment | -e <number>'.cyan} : Default is 100. Set the desired number of simulations while testing
 
 
