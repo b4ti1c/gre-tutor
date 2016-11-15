@@ -34,7 +34,7 @@ process.on('SIGINT', gracefulExit);
 const defaultWeek = _.chain(words)
     .keys()
     .map(weekName => parseInt(weekName.slice(4), 10))
-    .sort()
+    .sortBy()
     .reverse()
     .head()
     .value();
