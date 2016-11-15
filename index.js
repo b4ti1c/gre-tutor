@@ -59,6 +59,7 @@ console.log('It appears we are working on ' + 'week '.red + prepWeek.toString().
 
 if (argv.version) return;
 if (argv.load) return restoreSave('./words.json');
+if (argv.list || argv.l) return console.log(words) & console.log(`There are ${_.keys(checklist).length} words in dictionary.`);
 if (argv.help || argv.h) return showHelp();
 if (argv.add || argv.a) return addWords();
 if (argv.backup || argv.b) return save(path.resolve(argv.backup || argv.b));
@@ -70,7 +71,9 @@ if (argv.train || argv.t) return train().catch(err => err).then(err => {
 });
 if (argv.test) return test();
 if (argv.search || argv.s) return search();
-return console.log(words, `\nThere are ${_.keys(checklist).length} words in dictionary.`);
+return console.log(`There are ${_.size(checklist)} words in dictionary, composed from:\n`, _.mapValues(words, week => '' +
+    _.size(week) + ' words ---> %' + (100 * _.size(week) / _.size(checklist)).toFixed(1) + ' of total'
+)) & console.log('You may type `gre-tutor -h` to see the help menu');
 
 
 /**
@@ -399,6 +402,7 @@ Usage:
 * ${'gre-tutor [--open | -o <filepath>]'.blue} : Lists all the words in the opened dictionary
 * ${'gre-tutor (--help | -h)'.blue} : Show this help page
 * ${'gre-tutor --load'.blue} : Load the initial dictionary available with this program
+* ${'gre-tutor (--list | -l)'.blue} : List all the words in the current dictionary
 * ${'gre-tutor (--add | -a) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Insert words to the dictionary
 * ${'gre-tutor (--train | -t) [--week | -w <weeknumber>] [--voice | -v <voicename>] [--mute | -m] [--coverage | -c <percentage>] [--open | -o <filepath>]'.blue} : Train on the words in the dictionary
 * ${'gre-tutor (--search | -s) [--voice | -v <voicename>] [--mute | -m] [--open | -o <filepath>]'.blue} : Search words in the dictionary
