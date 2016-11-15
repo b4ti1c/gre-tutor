@@ -341,7 +341,7 @@ function save(path = persistenceFile) {
 
 
 function gracefulExit(e) {
-    if (e && e.message !='canceled') console.log(e || e.stack || e.message);
+    if (e && e.message != 'canceled') console.log(e || e.stack || e.message);
     save();
     process.exit();
 }
