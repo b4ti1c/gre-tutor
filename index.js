@@ -168,7 +168,7 @@ function insertWord() {
 
 
 function train() {
-    const askLoop = _ => askAWord().then(_ => coverage() >= desiredCoverage ? Promise.resolve : askLoop());
+    const askLoop = _ => askAWord().then(_ => coverage() >= desiredCoverage ? Promise.resolve() : askLoop());
     return askLoop();
 }
 
