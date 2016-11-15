@@ -67,7 +67,7 @@ if (argv.train || argv.t) return train().catch(err => err).then(err => {
 });
 if (argv.test) return test();
 if (argv.search || argv.s) return search();
-return console.log(words, `There are ${_.keys(checklist).length} words in dictionary.`);
+return console.log(words, `\nThere are ${_.keys(checklist).length} words in dictionary.`);
 
 
 /**
