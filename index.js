@@ -185,7 +185,7 @@ function askAWord() {
         speechFinished = pronounce(word);
 
         const covered = coverage({inclusive: 1});
-        const wordQuestion = `${word.blue} %${covered.toFixed(0)}`;
+        const wordQuestion = `${word.blue} %${Math.floor(100 * covered / desiredCoverage)}`;
 
 
         const correctAnswer = function() {
