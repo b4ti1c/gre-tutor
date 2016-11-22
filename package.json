@@ -1,6 +1,6 @@
 {
   "name": "gre-tutor",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A tutor for vocabulary",
   "main": "index.js",
   "engine": {
